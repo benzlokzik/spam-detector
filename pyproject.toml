@@ -1,0 +1,70 @@
+[project]
+name = "dialogue-kitogram"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy<2.0",
+    "aiogram>=3.0.0",
+    "aiosqlite>=0.17.0",
+    "loguru>=0.7.0",
+    "python-dotenv>=1.0.0",
+    "fasttext-wheel>=0.9.2",
+]
+license = { file = "LICENSE" }
+
+
+[dependency-groups]
+dev = [
+    "marimo[recommended]>=0.15.5",
+    "notebook>=7.3.2",
+    "ruff>=0.13.0",
+]
+raw = [
+    "fasttext",
+]
+
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "RUF001",
+    "RUF002",
+    "BLE001",
+    "ANN001",
+    "ERA001",
+    "ERA",
+    "D",
+    "G",
+    "PTH",
+    "TRY301",
+    "RUF003",
+    "UP007",
+    "N802",
+    "T201",
+    "FBT002"
+]
+
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = false
+docstring-code-line-length = "dynamic"
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cu124" }]
+torchvision = [{ index = "pytorch-cu124" }]
+fasttext = { git = "https://github.com/facebookresearch/fastText" }
+
+[tool.marimo.runtime]
+pythonpath = ["."]
+format_on_save = true
+
+[tool.marimo.save]
+autosave_delay = 1000
+autosave = "after_delay"
+format_on_save = true
