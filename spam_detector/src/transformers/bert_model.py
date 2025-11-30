@@ -10,7 +10,7 @@ from transformers import (
 )
 
 from ..core.base_model import ModelConfig, SpamModel
-from ..core.datasets import load_fasttext_dataset
+from ..core.datasets import load_dataset
 
 
 @dataclass
@@ -21,7 +21,6 @@ class BertTrainingConfig:
     epochs: int = 1
     lr: float = 2e-5
     warmup_ratio: float = 0.1
-    positive_label: str = "spam"
 
 
 class _TextDataset(Dataset):
@@ -62,13 +61,8 @@ class BertSpamModel(SpamModel):
         return torch.device("cpu")
 
     def fit(self) -> None:
-        paths = self.cfg.train_paths()
-        texts, labels = load_fasttext_dataset(paths)
-        if self.train_cfg.positive_label not in set(labels):
-            raise ValueError("Positive label not found in dataset")
-        targets = [
-            1 if label == self.train_cfg.positive_label else 0 for label in labels
-        ]
+        texts, labels = load_dataset()
+        targets = [int(label) for label in labels]
         dataset = _TextDataset(texts, targets)
         device = self._device()
         tokenizer = AutoTokenizer.from_pretrained(self.train_cfg.model_name)
@@ -116,10 +110,7 @@ class BertSpamModel(SpamModel):
                 optimizer.zero_grad()
         model.save_pretrained(self._model_dir)
         tokenizer.save_pretrained(self._model_dir)
-        meta = {
-            "positive_label": self.train_cfg.positive_label,
-            "model_name": self.train_cfg.model_name,
-        }
+        meta = {"model_name": self.train_cfg.model_name}
         meta_path = self.cfg.model_path.with_suffix(".json")
         meta_path.write_text(json.dumps(meta), encoding="utf-8")
         self._model = model

@@ -3,7 +3,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.neighbors import NearestNeighbors
 
 from ..core.base_model import ModelConfig, SpamModel
-from ..core.datasets import load_fasttext_dataset
+from ..core.datasets import load_dataset
 
 
 class RagSpamModel(SpamModel):
@@ -14,20 +14,18 @@ class RagSpamModel(SpamModel):
         analyzer: str = "word",
         ngram_range: tuple[int, int] = (1, 2),
         max_features: int = 100_000,
-        positive_label: str = "spam",
     ) -> None:
         super().__init__(cfg)
         self.n_neighbors = n_neighbors
         self.analyzer = analyzer
         self.ngram_range = ngram_range
         self.max_features = max_features
-        self.positive_label = positive_label
         self._vec: TfidfVectorizer | None = None
         self._nn: NearestNeighbors | None = None
-        self._labels: list[str] | None = None
+        self._labels: list[bool] | None = None
 
     def fit(self) -> None:
-        texts, labels = load_fasttext_dataset(self.cfg.train_paths())
+        texts, labels = load_dataset()
         if not texts:
             raise ValueError("Dataset is empty")
         vec = TfidfVectorizer(
@@ -68,7 +66,7 @@ class RagSpamModel(SpamModel):
         for dist, idx in zip(distances[0], indices[0], strict=False):
             weight = max(1.0 - float(dist), 0.0)
             total += weight
-            if self._labels[int(idx)] == self.positive_label:
+            if self._labels[int(idx)]:
                 spam_score += weight
         if total == 0.0:
             return 0.0

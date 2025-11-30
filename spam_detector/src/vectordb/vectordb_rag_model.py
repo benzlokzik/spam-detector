@@ -5,7 +5,7 @@ import chromadb
 from sentence_transformers import SentenceTransformer
 
 from ..core.base_model import ModelConfig, SpamModel
-from ..core.datasets import load_fasttext_dataset
+from ..core.datasets import load_dataset
 
 
 class VectorDbRagSpamModel(SpamModel):
@@ -17,14 +17,12 @@ class VectorDbRagSpamModel(SpamModel):
         top_k: int = 10,
         collection_name: str = "spam_examples",
         db_path: pathlib.Path | None = None,
-        positive_label: str = "spam",
     ) -> None:
         super().__init__(cfg)
         self.min_matches = min_matches
         self.similarity_threshold = similarity_threshold
         self.top_k = top_k
         self.collection_name = collection_name
-        self.positive_label = positive_label
         if db_path is None:
             self.db_path = self.cfg.data_dir / "chroma_db"
         else:
@@ -53,16 +51,12 @@ class VectorDbRagSpamModel(SpamModel):
         return self._encoder
 
     def fit(self) -> None:
-        texts, labels = load_fasttext_dataset(self.cfg.train_paths())
+        texts, labels = load_dataset()
         spam_texts = [
-            text
-            for text, label in zip(texts, labels, strict=False)
-            if label == self.positive_label
+            text for text, label in zip(texts, labels, strict=False) if label
         ]
         if not spam_texts:
-            raise ValueError(
-                f"No {self.positive_label} examples found in training data",
-            )
+            raise ValueError("No spam examples found in training data")
         client = self._get_client()
         try:
             collection = client.get_collection(name=self.collection_name)
@@ -87,7 +81,6 @@ class VectorDbRagSpamModel(SpamModel):
             "min_matches": self.min_matches,
             "similarity_threshold": self.similarity_threshold,
             "top_k": self.top_k,
-            "positive_label": self.positive_label,
         }
         config_path.write_text(json.dumps(config_data, indent=2), encoding="utf-8")
         print(f"Model saved to {config_path}")
@@ -106,7 +99,6 @@ class VectorDbRagSpamModel(SpamModel):
             self.similarity_threshold,
         )
         self.top_k = config_data.get("top_k", self.top_k)
-        self.positive_label = config_data.get("positive_label", self.positive_label)
         self._collection = self._get_collection()
         self._encoder = self._get_encoder()
 

@@ -1,10 +1,7 @@
-import pathlib
-from tempfile import NamedTemporaryFile
-
 import fasttext
 
 from ..core.base_model import ModelConfig, SpamModel
-from ..core.datasets import concatenate_fasttext_files, ensure_fasttext_files
+from ..core.datasets import get_fasttext_file
 
 
 class FastTextSpamModel(SpamModel):
@@ -40,20 +37,16 @@ class FastTextSpamModel(SpamModel):
         self._m: fasttext.FastText._FastText | None = None
 
     def fit(self) -> None:
-        paths = ensure_fasttext_files(self.cfg.train_paths())
-        with NamedTemporaryFile(mode="w", delete=False, encoding="utf-8") as tmp:
-            tmp_path = pathlib.Path(tmp.name)
-        concatenate_fasttext_files(paths, tmp_path)
-        model = fasttext.train_supervised(input=str(tmp_path), **self.params)
+        train_path = get_fasttext_file()
+        model = fasttext.train_supervised(input=str(train_path), **self.params)
         if self.quantize:
             model.quantize(
-                input=str(tmp_path),
+                input=str(train_path),
                 qnorm=self.qnorm,
                 retrain=self.retrain,
                 cutoff=self.cutoff,
             )
         model.save_model(str(self.cfg.model_path))
-        tmp_path.unlink(missing_ok=True)
         self._m = model
 
     def load(self) -> None:

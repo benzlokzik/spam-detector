@@ -9,6 +9,8 @@ dependencies = [
     "loguru>=0.7.0",
     "python-dotenv>=1.0.0",
     "fasttext-wheel>=0.9.2",
+    "pandas[parquet,fss]>=2.3.3",
+    "huggingface-hub>=1.1.6",
 ]
 license = { file = "LICENSE" }
 

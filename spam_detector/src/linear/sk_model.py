@@ -3,21 +3,20 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 
 from ..core.base_model import ModelConfig, SpamModel
-from ..core.datasets import load_fasttext_dataset
+from ..core.datasets import load_dataset
 
 
 class SklearnSpamModel(SpamModel):
-    def __init__(self, cfg: ModelConfig, positive_label: str = "spam") -> None:
+    def __init__(self, cfg: ModelConfig) -> None:
         super().__init__(cfg)
-        self.positive_label = positive_label
         self._vec: TfidfVectorizer | None = None
         self._clf: LogisticRegression | None = None
 
     def fit(self) -> None:
-        texts, labels = load_fasttext_dataset(self.cfg.train_paths())
+        texts, labels = load_dataset()
         if not texts:
             raise ValueError("No labeled lines found in training data.")
-        y = [1 if label == self.positive_label else 0 for label in labels]
+        y = [int(label) for label in labels]
         if len(set(y)) < 2:
             raise ValueError("Training data must contain both classes")
         vec = TfidfVectorizer(

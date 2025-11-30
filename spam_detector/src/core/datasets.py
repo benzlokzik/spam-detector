@@ -1,63 +1,34 @@
 import pathlib
-from collections.abc import Iterable, Iterator
+
+import pandas as pd
+
+HF_URL = "hf://datasets/benzlokzik/russian-spam-fork/processed_combined.parquet"
+DATA_DIR = pathlib.Path(__file__).resolve().parent.parent.parent / "data"
+LOCAL_PARQUET = DATA_DIR / "processed_combined.parquet"
 
 
-def _iter_fasttext_lines(path: pathlib.Path) -> Iterator[tuple[str, str]]:
-    with path.open("r", encoding="utf-8") as source:
-        for raw in source:
-            line = raw.strip()
-            if not line.startswith("__label__"):
-                continue
-            parts = line.split(maxsplit=1)
-            label = parts[0].replace("__label__", "", 1)
-            text = parts[1] if len(parts) > 1 else ""
-            yield label, text
+def load_hf_dataframe() -> pd.DataFrame:
+    if LOCAL_PARQUET.exists():
+        return pd.read_parquet(LOCAL_PARQUET)
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    df = pd.read_parquet(HF_URL)
+    df.to_parquet(LOCAL_PARQUET)
+    return df
 
 
-def ensure_fasttext_files(paths: Iterable[pathlib.Path]) -> list[pathlib.Path]:
-    resolved: list[pathlib.Path] = []
-    for path in paths:
-        p = pathlib.Path(path)
-        if not p.exists():
-            raise FileNotFoundError(f"Training file not found: {p}")
-        if not any(_iter_fasttext_lines(p)):
-            raise ValueError(f"Training data in {p} has no fastText labels")
-        resolved.append(p)
-    if not resolved:
-        raise FileNotFoundError("No training files provided")
-    return resolved
+def load_dataset() -> tuple[list[str], list[bool]]:
+    df = load_hf_dataframe()
+    return df["text"].tolist(), df["label"].tolist()
 
 
-def concatenate_fasttext_files(
-    paths: Iterable[pathlib.Path],
-    destination: pathlib.Path,
-) -> None:
-    dest = pathlib.Path(destination)
-    with dest.open("w", encoding="utf-8") as target:
-        for path in ensure_fasttext_files(paths):
-            with path.open("r", encoding="utf-8") as source:
-                for line in source:
-                    target.write(line)
-
-
-def load_fasttext_dataset(paths: Iterable[pathlib.Path]) -> tuple[list[str], list[str]]:
-    texts: list[str] = []
-    labels: list[str] = []
-    for path in ensure_fasttext_files(paths):
-        for label, text in _iter_fasttext_lines(path):
-            labels.append(label)
-            texts.append(text)
-    return texts, labels
-
-
-def dump_fasttext_dataset(
-    path: pathlib.Path,
-    texts: Iterable[str],
-    labels: Iterable[str],
-) -> None:
-    dest = pathlib.Path(path)
-    with dest.open("w", encoding="utf-8") as target:
-        for text, label in zip(texts, labels, strict=False):
-            clean_label = str(label).strip()
-            clean_text = text.replace("\n", " ").strip()
-            target.write(f"__label__{clean_label} {clean_text}\n")
+def get_fasttext_file() -> pathlib.Path:
+    fasttext_path = DATA_DIR / "train.txt"
+    if fasttext_path.exists():
+        return fasttext_path
+    df = load_hf_dataframe()
+    with fasttext_path.open("w", encoding="utf-8") as f:
+        for text, label in zip(df["text"], df["label"], strict=False):
+            tag = "__label__spam" if label else "__label__ham"
+            clean = text.replace("\n", " ").strip()
+            f.write(f"{tag} {clean}\n")
+    return fasttext_path

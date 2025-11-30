@@ -333,3 +333,6 @@ pyrightconfig.json
 # End of https://www.toptal.com/developers/gitignore/api/macos,jetbrains+all,python,visualstudiocode,jupyternotebooks
 
 __marimo__/
+
+*.parquet
+spam-detector/data/train.txt
