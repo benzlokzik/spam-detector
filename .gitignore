@@ -335,4 +335,4 @@ pyrightconfig.json
 __marimo__/
 
 *.parquet
-spam-detector/data/train.txt
+spam_detector/data/train.txt
