@@ -13,10 +13,13 @@ Comparative analysis of text classification methods: fastText, BERT, RAG approac
 ## Installation
 
 ```bash
-pip install uv
-uv sync
+uv sync # select required groups to work with
 ```
 
 ## Usage
 
 See `experiments/` directory for training and evaluation scripts.
+
+## Hugging Face
+
+Published models and datasets are available in the [spam-detection collection](https://huggingface.co/collections/benzlokzik/spam-detection).
