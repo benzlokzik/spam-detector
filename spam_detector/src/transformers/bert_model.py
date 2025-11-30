@@ -18,7 +18,7 @@ from ..core.datasets import load_dataset
 class BertTrainingConfig:
     model_name: str = "cointegrated/rubert-tiny2"
     max_length: int = 128
-    batch_size: int = 16
+    batch_size: int = 32
     epochs: int = 1
     lr: float = 2e-5
     warmup_ratio: float = 0.1
