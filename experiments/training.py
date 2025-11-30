@@ -8,12 +8,14 @@ app = marimo.App(width="medium")
 def _():
     import marimo as mo
     import pandas as pd
+
     return mo, pd
 
 
 @app.cell
 def _():
     from spam_detector.src.fastspam.ft_model import FastTextSpamModel, ModelConfig
+
     return FastTextSpamModel, ModelConfig
 
 
@@ -39,6 +41,7 @@ def _(FastTextSpamModel, cfg, mo, pd):
                 },
             ).to_html(index=False),
         )
+
     return (predict,)
 
 

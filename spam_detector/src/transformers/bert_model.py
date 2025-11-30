@@ -4,6 +4,7 @@ from dataclasses import dataclass
 import torch
 from loguru import logger
 from torch.utils.data import DataLoader, Dataset
+from tqdm import tqdm
 from transformers import (
     AutoModelForSequenceClassification,
     AutoTokenizer,
@@ -104,14 +105,15 @@ class BertSpamModel(SpamModel):
         )
         model.train()
         for epoch in range(self.train_cfg.epochs):
-            logger.info(f"Epoch {epoch + 1}/{self.train_cfg.epochs}")
-            for batch in loader:
+            pbar = tqdm(loader, desc=f"Epoch {epoch + 1}/{self.train_cfg.epochs}")
+            for batch in pbar:
                 outputs = model(**batch)
                 loss = outputs.loss
                 loss.backward()
                 optimizer.step()
                 scheduler.step()
                 optimizer.zero_grad()
+                pbar.set_postfix(loss=f"{loss.item():.4f}")
         model.save_pretrained(self._model_dir)
         tokenizer.save_pretrained(self._model_dir)
         meta = {"model_name": self.train_cfg.model_name}

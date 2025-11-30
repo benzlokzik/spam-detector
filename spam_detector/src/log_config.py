@@ -5,7 +5,6 @@ from pathlib import Path
 from dotenv import load_dotenv
 from loguru import logger
 
-# Load environment variables first
 env_file = Path(".env")
 if env_file.exists():
     load_dotenv(env_file)
@@ -19,14 +18,11 @@ log_format = (
 
 
 def setup_logging() -> None:
-    """Configure loguru logging with the provided cool config."""
     log_file_path = os.getenv("LOG_FILE_PATH", "logs/bot.log")
     log_level = os.getenv("LOG_LEVEL", "INFO")
+    logs_dir = Path(log_file_path).parent
+    logs_dir.mkdir(exist_ok=True)
 
-    # Create logs directory if it doesn't exist
-    Path(log_file_path).parent.mkdir(exist_ok=True)
-
-    # Configure Loguru
     logger.remove()
     logger.add(sys.stdout, format=log_format, level="DEBUG")
     logger.add(
@@ -34,9 +30,22 @@ def setup_logging() -> None:
         format=log_format,
         level=log_level,
         encoding="utf-8",
-        mode="a",
+        rotation="10 MB",
+        retention="7 days",
+        compression="gz",
+    )
+    logger.add(
+        logs_dir / "training_{time:YYYY-MM-DD}.log",
+        format=log_format,
+        level="DEBUG",
+        encoding="utf-8",
+        rotation="1 day",
+        retention="30 days",
+        filter=lambda record: "Training" in record["message"]
+        or "Epoch" in record["message"]
+        or "Model saved" in record["message"]
+        or "device" in record["message"],
     )
 
 
-# Setup logging when module is imported
 setup_logging()

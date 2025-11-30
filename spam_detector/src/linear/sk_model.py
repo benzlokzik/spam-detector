@@ -32,9 +32,10 @@ class SklearnSpamModel(SpamModel):
         Xv = vec.fit_transform(texts)
         logger.debug("Training LogisticRegression...")
         clf = LogisticRegression(
-            solver="liblinear",
+            solver="lbfgs",
             max_iter=1000,
             class_weight="balanced",
+            verbose=1,
         )
         clf.fit(Xv, y)
         joblib.dump((vec, clf), str(self.cfg.model_path))

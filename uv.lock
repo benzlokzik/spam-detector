@@ -3222,6 +3222,7 @@ dependencies = [
     { name = "loguru" },
     { name = "pandas", extra = ["fss", "parquet"] },
     { name = "python-dotenv" },
+    { name = "tqdm" },
 ]
 
 [package.dev-dependencies]
@@ -3256,6 +3257,7 @@ requires-dist = [
     { name = "loguru", specifier = ">=0.7.0" },
     { name = "pandas", extras = ["parquet", "fss"], specifier = ">=2.3.3" },
     { name = "python-dotenv", specifier = ">=1.0.0" },
+    { name = "tqdm", specifier = ">=4.67.1" },
 ]
 
 [package.metadata.requires-dev]

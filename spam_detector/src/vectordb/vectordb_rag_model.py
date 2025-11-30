@@ -59,7 +59,10 @@ class VectorDbRagSpamModel(SpamModel):
         if self._encoder is None:
             device = self._device()
             logger.info(f"Using device: {device}")
-            self._encoder = SentenceTransformer("cointegrated/LaBSE-en-ru", device=device)
+            self._encoder = SentenceTransformer(
+                "cointegrated/LaBSE-en-ru",
+                device=device,
+            )
         return self._encoder
 
     def fit(self) -> None:

@@ -41,7 +41,9 @@ class FastTextSpamModel(SpamModel):
     def fit(self) -> None:
         logger.info("Training FastText model...")
         train_path = get_fasttext_file()
-        model = fasttext.train_supervised(input=str(train_path), **self.params)
+        model = fasttext.train_supervised(
+            input=str(train_path), verbose=2, **self.params
+        )
         if self.quantize:
             logger.debug("Quantizing model...")
             model.quantize(

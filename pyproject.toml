@@ -9,6 +9,7 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "pandas[parquet,fss]>=2.3.3",
     "huggingface-hub>=0.36.0",
+    "tqdm>=4.67.1",
 ]
 license = { file = "LICENSE" }
 
