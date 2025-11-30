@@ -1,14 +1,24 @@
 import pathlib
-import sys
 
+import pandas as pd
 import pytest
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "spam_detector" / "data"
+LOCAL_PARQUET = DATA_DIR / "processed_combined.parquet"
+HF_URL = "hf://datasets/benzlokzik/russian-spam-fork/processed_combined.parquet"
 
-from spam_detector.src.core.datasets import load_hf_dataframe
+
+def load_hf_dataframe() -> pd.DataFrame:
+    if LOCAL_PARQUET.exists():
+        return pd.read_parquet(LOCAL_PARQUET)
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    df = pd.read_parquet(HF_URL)
+    df.to_parquet(LOCAL_PARQUET)
+    return df
 
 TEST_LIMIT = 5000
 TEST_DIR = pathlib.Path(__file__).resolve().parent / "test_data"
+MODELS_DIR = TEST_DIR / "models"
 
 
 @pytest.fixture(scope="module")
@@ -49,9 +59,14 @@ class TestFastText:
         labels, probs = model.predict("тест", k=2)
         assert len(labels) == 2
 
+        save_path = MODELS_DIR / "fasttext"
+        save_path.mkdir(parents=True, exist_ok=True)
+        model.save_model(str(save_path / "model.bin"))
+
 
 class TestSklearn:
     def test_fit(self, test_dataset):
+        import joblib
         from sklearn.feature_extraction.text import TfidfVectorizer
         from sklearn.linear_model import LogisticRegression
 
@@ -74,9 +89,15 @@ class TestSklearn:
         proba = clf.predict_proba(vec.transform(["тест"]))[0, 1]
         assert 0.0 <= proba <= 1.0
 
+        save_path = MODELS_DIR / "sklearn"
+        save_path.mkdir(parents=True, exist_ok=True)
+        joblib.dump(vec, save_path / "vectorizer.joblib")
+        joblib.dump(clf, save_path / "classifier.joblib")
+
 
 class TestRag:
     def test_fit(self, test_dataset):
+        import joblib
         from sklearn.feature_extraction.text import TfidfVectorizer
         from sklearn.neighbors import NearestNeighbors
 
@@ -96,6 +117,12 @@ class TestRag:
             vec.transform(["тест"]), return_distance=True
         )
         assert len(indices[0]) == 8
+
+        save_path = MODELS_DIR / "rag"
+        save_path.mkdir(parents=True, exist_ok=True)
+        joblib.dump(vec, save_path / "vectorizer.joblib")
+        joblib.dump(nn, save_path / "neighbors.joblib")
+        joblib.dump({"texts": texts, "labels": labels}, save_path / "corpus.joblib")
 
 
 class TestBert:
@@ -162,9 +189,15 @@ class TestBert:
 
         assert loss.item() >= 0
 
+        save_path = MODELS_DIR / "bert"
+        save_path.mkdir(parents=True, exist_ok=True)
+        model.save_pretrained(save_path)
+        tokenizer.save_pretrained(save_path)
+
 
 class TestVectorDb:
     def test_fit(self, test_dataset):
+        import json
         import torch
         import chromadb
         from sentence_transformers import SentenceTransformer
@@ -184,8 +217,9 @@ class TestVectorDb:
             else "cpu"
         )
 
-        TEST_DIR.mkdir(exist_ok=True)
-        db_path = TEST_DIR / "test_chroma_db"
+        save_path = MODELS_DIR / "vectordb"
+        save_path.mkdir(parents=True, exist_ok=True)
+        db_path = save_path / "chroma_db"
         client = chromadb.PersistentClient(path=str(db_path))
         try:
             client.delete_collection(name="test_spam")
@@ -193,7 +227,8 @@ class TestVectorDb:
             pass
         collection = client.create_collection(name="test_spam")
 
-        encoder = SentenceTransformer("cointegrated/LaBSE-en-ru", device=device)
+        encoder_name = "cointegrated/LaBSE-en-ru"
+        encoder = SentenceTransformer(encoder_name, device=device)
         embeddings = encoder.encode(spam_texts, show_progress_bar=False, batch_size=32)
         collection.add(
             embeddings=embeddings.tolist(),
@@ -202,3 +237,6 @@ class TestVectorDb:
         )
 
         assert collection.count() == len(spam_texts)
+
+        with (save_path / "config.json").open("w") as f:
+            json.dump({"encoder": encoder_name, "collection": "test_spam"}, f)
