@@ -1,10 +1,10 @@
 import pathlib
-import shutil
 from tempfile import NamedTemporaryFile
 
 import fasttext
 
 from ..core.base_model import ModelConfig, SpamModel
+from ..core.datasets import concatenate_fasttext_files, ensure_fasttext_files
 
 
 class FastTextSpamModel(SpamModel):
@@ -39,49 +39,22 @@ class FastTextSpamModel(SpamModel):
         self.cutoff = cutoff
         self._m: fasttext.FastText._FastText | None = None
 
-    def _validate_training_files(self, paths: list[pathlib.Path]) -> None:
-        if not paths:
-            msg = "No training files provided"
-            raise FileNotFoundError(msg)
-        for path in paths:
-            if not path.exists():
-                msg = f"Training file not found: {path}"
-                raise FileNotFoundError(msg)
-            with path.open("r", encoding="utf-8") as f:
-                has_labelled_line = any(
-                    line.lstrip().startswith("__label__") for line in f
-                )
-            if not has_labelled_line:
-                msg = (
-                    f"Training data in {path} must be labelled in FastText format,\n"
-                    "e.g.:\n__label__spam Your text here\n__label__ham Your text here"
-                )
-                raise ValueError(msg)
-
     def fit(self) -> None:
-        print("Training FastText model...")
-        paths = self.cfg.train_paths()
-        self._validate_training_files(paths)
-        # Merge multiple files into a temporary file to feed FastText
-        with NamedTemporaryFile(mode="w+", delete=False, encoding="utf-8") as tmp:
-            tmp_path = tmp.name
-            for p in paths:
-                with p.open("r", encoding="utf-8") as f:
-                    shutil.copyfileobj(f, tmp)
-            tmp.flush()
-        input_path = pathlib.Path(tmp_path)
-
-        print("Training data files:", [str(p) for p in paths])
-        m = fasttext.train_supervised(input=str(input_path), **self.params)
+        paths = ensure_fasttext_files(self.cfg.train_paths())
+        with NamedTemporaryFile(mode="w", delete=False, encoding="utf-8") as tmp:
+            tmp_path = pathlib.Path(tmp.name)
+        concatenate_fasttext_files(paths, tmp_path)
+        model = fasttext.train_supervised(input=str(tmp_path), **self.params)
         if self.quantize:
-            m.quantize(
-                input=str(input_path),
+            model.quantize(
+                input=str(tmp_path),
                 qnorm=self.qnorm,
                 retrain=self.retrain,
                 cutoff=self.cutoff,
             )
-        m.save_model(str(self.cfg.model_path))
-        self._m = m
+        model.save_model(str(self.cfg.model_path))
+        tmp_path.unlink(missing_ok=True)
+        self._m = model
 
     def load(self) -> None:
         self._m = fasttext.load_model(str(self.cfg.model_path))
@@ -89,12 +62,10 @@ class FastTextSpamModel(SpamModel):
     def predict_proba(self, text: str) -> float:
         if self._m is None:
             self.load()
-        model = self._m
-        if model is None:
-            msg = "Model is not loaded"
-            raise RuntimeError(msg)
-        labels, probs = model.predict(text.lower().replace("\n", "\t").strip(), k=2)
-        # return (labels, probs)
+        if self._m is None:
+            raise RuntimeError("Model is not loaded")
+        processed = text.lower().replace("\n", "\t").strip()
+        labels, probs = self._m.predict(processed, k=2)
         return max(
             (p for l, p in zip(labels, probs, strict=False) if l == "__label__spam"),
             default=0.0,
