@@ -13,7 +13,7 @@ def _():
 
 @app.cell
 def _():
-    from dialogue_kitogram.src.fastspam.ft_model import FastTextSpamModel, ModelConfig
+    from spam_detector.src.fastspam.ft_model import FastTextSpamModel, ModelConfig
     return FastTextSpamModel, ModelConfig
 
 
@@ -73,7 +73,7 @@ def _(df):
 @app.cell
 def _(df):
     df["text"].to_csv(
-        "./dialogue_kitogram/data/labeled_dataset_from_hf.txt",
+        "./spam-detector/data/labeled_dataset_from_hf.txt",
         index=False,
         header=False,
     )
