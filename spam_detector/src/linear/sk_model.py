@@ -1,4 +1,5 @@
 import joblib
+from loguru import logger
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 
@@ -13,12 +14,14 @@ class SklearnSpamModel(SpamModel):
         self._clf: LogisticRegression | None = None
 
     def fit(self) -> None:
+        logger.info("Training sklearn model...")
         texts, labels = load_dataset()
         if not texts:
             raise ValueError("No labeled lines found in training data.")
         y = [int(label) for label in labels]
         if len(set(y)) < 2:
             raise ValueError("Training data must contain both classes")
+        logger.debug("Fitting TF-IDF vectorizer...")
         vec = TfidfVectorizer(
             analyzer="char",
             ngram_range=(3, 5),
@@ -27,6 +30,7 @@ class SklearnSpamModel(SpamModel):
             max_features=100_000,
         )
         Xv = vec.fit_transform(texts)
+        logger.debug("Training LogisticRegression...")
         clf = LogisticRegression(
             solver="liblinear",
             max_iter=1000,
@@ -35,6 +39,7 @@ class SklearnSpamModel(SpamModel):
         clf.fit(Xv, y)
         joblib.dump((vec, clf), str(self.cfg.model_path))
         self._vec, self._clf = vec, clf
+        logger.info(f"Model saved to {self.cfg.model_path}")
 
     def load(self) -> None:
         self._vec, self._clf = joblib.load(str(self.cfg.model_path))

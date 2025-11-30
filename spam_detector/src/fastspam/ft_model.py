@@ -1,5 +1,7 @@
 import fasttext
+from loguru import logger
 
+from .. import log_config  # noqa: F401
 from ..core.base_model import ModelConfig, SpamModel
 from ..core.datasets import get_fasttext_file
 
@@ -37,9 +39,11 @@ class FastTextSpamModel(SpamModel):
         self._m: fasttext.FastText._FastText | None = None
 
     def fit(self) -> None:
+        logger.info("Training FastText model...")
         train_path = get_fasttext_file()
         model = fasttext.train_supervised(input=str(train_path), **self.params)
         if self.quantize:
+            logger.debug("Quantizing model...")
             model.quantize(
                 input=str(train_path),
                 qnorm=self.qnorm,
@@ -48,6 +52,7 @@ class FastTextSpamModel(SpamModel):
             )
         model.save_model(str(self.cfg.model_path))
         self._m = model
+        logger.info(f"Model saved to {self.cfg.model_path}")
 
     def load(self) -> None:
         self._m = fasttext.load_model(str(self.cfg.model_path))
@@ -69,16 +74,10 @@ if __name__ == "__main__":
     cfg = ModelConfig()
     model = FastTextSpamModel(cfg)
     model.fit()
-    print(
-        model.predict_proba("Срочно работа в Москве! З/п 150 000 руб! Писать на в лс"),
+    logger.info(
+        f"Spam test: {model.predict_proba('Срочно работа в Москве! З/п 150 000 руб! Писать на в лс')}"
     )
-    print(
-        model.predict_proba(
-            "блять как же заебали кустовые эйдоры сука ненавижу их всех",
-        ),
+    logger.info(
+        f"Ham test: {model.predict_proba('блять как же заебали кустовые эйдоры сука ненавижу их всех')}"
     )
-    print(
-        model.predict_proba(
-            "qq",
-        ),
-    )
+    logger.info(f"Short test: {model.predict_proba('qq')}")

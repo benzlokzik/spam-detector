@@ -2,8 +2,10 @@ import json
 import pathlib
 
 import chromadb
+from loguru import logger
 from sentence_transformers import SentenceTransformer
 
+from .. import log_config  # noqa: F401
 from ..core.base_model import ModelConfig, SpamModel
 from ..core.datasets import load_dataset
 
@@ -52,9 +54,7 @@ class VectorDbRagSpamModel(SpamModel):
 
     def fit(self) -> None:
         texts, labels = load_dataset()
-        spam_texts = [
-            text for text, label in zip(texts, labels, strict=False) if label
-        ]
+        spam_texts = [text for text, label in zip(texts, labels, strict=False) if label]
         if not spam_texts:
             raise ValueError("No spam examples found in training data")
         client = self._get_client()
@@ -65,9 +65,9 @@ class VectorDbRagSpamModel(SpamModel):
             pass
         collection = client.create_collection(name=self.collection_name)
         encoder = self._get_encoder()
-        print(f"Generating embeddings for {len(spam_texts)} spam examples...")
+        logger.info(f"Generating embeddings for {len(spam_texts)} spam examples...")
         embeddings = encoder.encode(spam_texts, show_progress_bar=True, batch_size=32)
-        print("Storing embeddings in ChromaDB...")
+        logger.info("Storing embeddings in ChromaDB...")
         collection.add(
             embeddings=embeddings.tolist(),
             documents=spam_texts,
@@ -83,7 +83,7 @@ class VectorDbRagSpamModel(SpamModel):
             "top_k": self.top_k,
         }
         config_path.write_text(json.dumps(config_data, indent=2), encoding="utf-8")
-        print(f"Model saved to {config_path}")
+        logger.info(f"Model saved to {config_path}")
 
     def load(self) -> None:
         config_path = self.cfg.model_path.with_suffix(".json")

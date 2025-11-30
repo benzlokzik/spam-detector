@@ -1,4 +1,5 @@
 import joblib
+from loguru import logger
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.neighbors import NearestNeighbors
 
@@ -25,9 +26,11 @@ class RagSpamModel(SpamModel):
         self._labels: list[bool] | None = None
 
     def fit(self) -> None:
+        logger.info("Training RAG model...")
         texts, labels = load_dataset()
         if not texts:
             raise ValueError("Dataset is empty")
+        logger.debug("Fitting TF-IDF vectorizer...")
         vec = TfidfVectorizer(
             analyzer=self.analyzer,
             ngram_range=self.ngram_range,
@@ -36,6 +39,7 @@ class RagSpamModel(SpamModel):
         )
         matrix = vec.fit_transform(texts)
         neighbor_count = min(self.n_neighbors, len(texts))
+        logger.debug(f"Fitting NearestNeighbors (k={neighbor_count})...")
         nn = NearestNeighbors(n_neighbors=neighbor_count, metric="cosine")
         nn.fit(matrix)
         payload = {
@@ -47,6 +51,7 @@ class RagSpamModel(SpamModel):
         self._vec = vec
         self._nn = nn
         self._labels = labels
+        logger.info(f"Model saved to {self.cfg.model_path}")
 
     def load(self) -> None:
         data = joblib.load(str(self.cfg.model_path))

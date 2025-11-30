@@ -2,6 +2,7 @@ import json
 from dataclasses import dataclass
 
 import torch
+from loguru import logger
 from torch.utils.data import DataLoader, Dataset
 from transformers import (
     AutoModelForSequenceClassification,
@@ -61,10 +62,12 @@ class BertSpamModel(SpamModel):
         return torch.device("cpu")
 
     def fit(self) -> None:
+        logger.info(f"Training BERT model ({self.train_cfg.model_name})...")
         texts, labels = load_dataset()
         targets = [int(label) for label in labels]
         dataset = _TextDataset(texts, targets)
         device = self._device()
+        logger.info(f"Using device: {device}")
         tokenizer = AutoTokenizer.from_pretrained(self.train_cfg.model_name)
         model = AutoModelForSequenceClassification.from_pretrained(
             self.train_cfg.model_name,
@@ -100,7 +103,8 @@ class BertSpamModel(SpamModel):
             num_training_steps=total_steps,
         )
         model.train()
-        for _ in range(self.train_cfg.epochs):
+        for epoch in range(self.train_cfg.epochs):
+            logger.info(f"Epoch {epoch + 1}/{self.train_cfg.epochs}")
             for batch in loader:
                 outputs = model(**batch)
                 loss = outputs.loss
@@ -115,6 +119,7 @@ class BertSpamModel(SpamModel):
         meta_path.write_text(json.dumps(meta), encoding="utf-8")
         self._model = model
         self._tokenizer = tokenizer
+        logger.info(f"Model saved to {self._model_dir}")
 
     def load(self) -> None:
         tokenizer = AutoTokenizer.from_pretrained(self._model_dir)
