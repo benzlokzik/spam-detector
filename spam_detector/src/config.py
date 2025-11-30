@@ -50,6 +50,18 @@ def get_log_file_path() -> str:
     return os.getenv("LOG_FILE_PATH", "logs/bot.log")
 
 
+def get_model_backend() -> str:
+    """Get model backend from environment."""
+    load_config()
+    return os.getenv("MODEL_BACKEND", "fasttext")
+
+
+def get_model_filename() -> str:
+    """Get model filename from environment."""
+    load_config()
+    return os.getenv("MODEL_FILENAME", "antispam.bin")
+
+
 # Load configuration when module is imported
 load_config()
 

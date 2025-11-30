@@ -2,6 +2,7 @@ import json
 import pathlib
 
 import chromadb
+import torch
 from loguru import logger
 from sentence_transformers import SentenceTransformer
 
@@ -47,9 +48,18 @@ class VectorDbRagSpamModel(SpamModel):
                 self._collection = client.create_collection(name=self.collection_name)
         return self._collection
 
+    def _device(self) -> str:
+        if torch.cuda.is_available():
+            return "cuda"
+        if torch.backends.mps.is_available():
+            return "mps"
+        return "cpu"
+
     def _get_encoder(self) -> SentenceTransformer:
         if self._encoder is None:
-            self._encoder = SentenceTransformer("cointegrated/LaBSE-en-ru")
+            device = self._device()
+            logger.info(f"Using device: {device}")
+            self._encoder = SentenceTransformer("cointegrated/LaBSE-en-ru", device=device)
         return self._encoder
 
     def fit(self) -> None:
