@@ -3220,7 +3220,6 @@ source = { virtual = "." }
 dependencies = [
     { name = "huggingface-hub" },
     { name = "loguru" },
-    { name = "numpy" },
     { name = "pandas", extra = ["fss", "parquet"] },
     { name = "python-dotenv" },
 ]
@@ -3255,7 +3254,6 @@ transformers = [
 requires-dist = [
     { name = "huggingface-hub", specifier = ">=0.36.0" },
     { name = "loguru", specifier = ">=0.7.0" },
-    { name = "numpy", specifier = "<2.0" },
     { name = "pandas", extras = ["parquet", "fss"], specifier = ">=2.3.3" },
     { name = "python-dotenv", specifier = ">=1.0.0" },
 ]
