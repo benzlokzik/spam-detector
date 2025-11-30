@@ -8,7 +8,7 @@ class ModelConfig:
     """Configuration for spam detection model paths."""
 
     project_root: pathlib.Path = pathlib.Path(__file__).resolve().parents[3]
-    data_subdir: str = "spam-detector/data"
+    data_subdir: str = "spam_detector/data"
     model_name: str = "antispam.bin"
     train_name: str = "train_data.txt"
     train_names: list[str] | None = None
