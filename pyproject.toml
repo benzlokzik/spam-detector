@@ -1,7 +1,7 @@
 [project]
 name = "spam-detector"
 version = "0.1.0"
-description = "Add your description here"
+description = "Comparative analysis of spam detection methods: fastText, BERT, RAG, and scikit-learn on a single corpus"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [

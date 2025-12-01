@@ -4,11 +4,13 @@ Comparative analysis of text classification methods: fastText, BERT, RAG approac
 
 ## Models
 
-- **FastText** - FastText-based spam detection
-- **Scikit-learn** - TF-IDF + Logistic Regression
-- **BERT** - Transformer-based classification
-- **RAG** - Retrieval-Augmented Generation with TF-IDF + kNN
-- **VectorDB RAG** - RAG using ChromaDB and LaBSE embeddings
+| Model            | Approach                     | Key Features                         |
+| ---------------- | ---------------------------- | ------------------------------------ |
+| **FastText**     | Shallow neural network       | Fast training, subword embeddings    |
+| **Scikit-learn** | TF-IDF + Logistic Regression | Lightweight, interpretable           |
+| **BERT**         | Transformer                  | High accuracy, contextual embeddings |
+| **RAG**          | TF-IDF + kNN retrieval       | No training required, explainable    |
+| **VectorDB RAG** | ChromaDB + LaBSE             | Semantic search, multilingual        |
 
 ## Installation
 
@@ -19,6 +21,12 @@ uv sync # select required groups to work with
 ## Usage
 
 See `experiments/` directory for training and evaluation scripts.
+
+## Testing
+
+```bash
+uv run pytest
+```
 
 ## Hugging Face
 
