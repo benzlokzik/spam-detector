@@ -27,7 +27,10 @@
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
-
+	"remoteEnv": {
+		"UV_PROJECT_ENVIRONMENT": ".venv_linux",
+		"PATH": "${containerEnv:PATH}:/usr/local/cuda/bin"
+	},
 	// Use 'postCreateCommand' to run commands after the container is created.
 	"postCreateCommand": "uv sync --all-groups",
 	"customizations": {
