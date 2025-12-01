@@ -57,10 +57,20 @@ def main() -> None:
         required=True,
         help="Model to train",
     )
+    parser.add_argument(
+        "--exclude",
+        nargs="+",
+        choices=list(TRAINERS.keys()),
+        default=[],
+        help="Models to exclude when using --model all",
+    )
     args = parser.parse_args()
 
     if args.model == "all":
         for name, trainer in TRAINERS.items():
+            if name in args.exclude:
+                logger.info(f"Skipping {name} (excluded)")
+                continue
             logger.info(f"Training {name}...")
             try:
                 trainer()
