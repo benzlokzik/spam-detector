@@ -38,7 +38,11 @@
 			"extensions": [
 				"fill-labs.dependi",
 				"tamasfe.even-better-toml"
-			]
+			],
+			"settings": {
+				"python.pythonPath": ".venv_linux/bin/python",
+				"python.defaultInterpreterPath": ".venv_linux/bin/python"
+			}
 		}
 	}
 
