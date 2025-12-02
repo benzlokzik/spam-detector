@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  # push:
+  #   branches: [main]
+  # pull_request:
+  #   branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "latest"
+          enable-cache: "auto"
+          restore-cache: "true"
+          save-cache: "true"
+          cache-suffix: ${{ github.sha }}
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: |
+          uv sync --all-groups
+
+      - name: Run linter
+        run: uv run ruff check .
+
+      - name: Run tests
+        run: |
+          mkdir -p logs
+          uv run pytest tests/ -v --tb=short --html=logs/report.html | tee logs/pytest.log
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs
+          path: logs/
+          retention-days: 14
+
+      - name: Upload test data
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test_data
+          path: tests/test_data/
+          retention-days: 14
