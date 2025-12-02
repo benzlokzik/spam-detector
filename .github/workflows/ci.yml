@@ -37,7 +37,7 @@ jobs:
       - name: Run tests
         run: |
           mkdir -p logs
-          uv run pytest tests/ -v --tb=short --html=logs/report.html | tee logs/pytest.log
+          uv run pytest --html=logs/report.html --self-contained-html --junitxml=logs/junit.xml
 
       - name: Upload logs
         if: always()
