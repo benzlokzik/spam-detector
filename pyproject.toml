@@ -20,6 +20,7 @@ dev = [
     "notebook>=7.3.2",
     "ruff>=0.13.0",
     "pytest>=8.0.0",
+    "pytest-html>=4.1.1",
 ]
 # raw = [
 #     "fasttext",
