@@ -17,10 +17,12 @@ class SklearnSpamModel(SpamModel):
         logger.info("Training sklearn model...")
         texts, labels = load_dataset()
         if not texts:
-            raise ValueError("No labeled lines found in training data.")
+            msg = "No labeled lines found in training data."
+            raise ValueError(msg)
         y = [int(label) for label in labels]
-        if len(set(y)) < 2:
-            raise ValueError("Training data must contain both classes")
+        if len(set(y)) < 2:  # noqa: PLR2004
+            msg = "Training data must contain both classes"
+            raise ValueError(msg)
         logger.debug("Fitting TF-IDF vectorizer...")
         vec = TfidfVectorizer(
             analyzer="char",
@@ -49,7 +51,8 @@ class SklearnSpamModel(SpamModel):
         if self._vec is None or self._clf is None:
             self.load()
         if self._vec is None or self._clf is None:
-            raise RuntimeError("Model is not loaded")
+            msg = "Model is not loaded"
+            raise RuntimeError(msg)
         processed = text.lower().replace("\n", "\t").strip()
         Xv = self._vec.transform([processed])
         return float(self._clf.predict_proba(Xv)[0, 1])

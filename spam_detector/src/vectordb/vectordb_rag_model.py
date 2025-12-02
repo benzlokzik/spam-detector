@@ -69,13 +69,14 @@ class VectorDbRagSpamModel(SpamModel):
         texts, labels = load_dataset()
         spam_texts = [text for text, label in zip(texts, labels, strict=False) if label]
         if not spam_texts:
-            raise ValueError("No spam examples found in training data")
+            msg = "No spam examples found in training data"
+            raise ValueError(msg)
         client = self._get_client()
         try:
             collection = client.get_collection(name=self.collection_name)
             client.delete_collection(name=self.collection_name)
         except Exception:
-            pass
+            logger.debug(f"Collection '{self.collection_name}' not found, creating new")
         collection = client.create_collection(name=self.collection_name)
         encoder = self._get_encoder()
         logger.info(f"Generating embeddings for {len(spam_texts)} spam examples...")
@@ -101,7 +102,8 @@ class VectorDbRagSpamModel(SpamModel):
     def load(self) -> None:
         config_path = self.cfg.model_path.with_suffix(".json")
         if not config_path.exists():
-            raise FileNotFoundError(f"Model config not found: {config_path}")
+            msg = f"Model config not found: {config_path}"
+            raise FileNotFoundError(msg)
         config_data = json.loads(config_path.read_text(encoding="utf-8"))
         self.collection_name = config_data.get("collection_name", self.collection_name)
         if "db_path" in config_data:
@@ -119,7 +121,8 @@ class VectorDbRagSpamModel(SpamModel):
         if self._collection is None or self._encoder is None:
             self.load()
         if self._collection is None or self._encoder is None:
-            raise RuntimeError("Model is not loaded")
+            msg = "Model is not loaded"
+            raise RuntimeError(msg)
         query_embedding = self._encoder.encode([text], show_progress_bar=False)[0]
         results = self._collection.query(
             query_embeddings=[query_embedding.tolist()],

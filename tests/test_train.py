@@ -93,7 +93,9 @@ class TestSklearn:
         )
         Xv = vec.fit_transform(texts)
         clf = LogisticRegression(
-            solver="liblinear", max_iter=1000, class_weight="balanced"
+            solver="liblinear",
+            max_iter=1000,
+            class_weight="balanced",
         )
         clf.fit(Xv, y)
 
@@ -125,7 +127,8 @@ class TestRag:
         nn.fit(matrix)
 
         distances, indices = nn.kneighbors(
-            vec.transform(["тест"]), return_distance=True
+            vec.transform(["тест"]),
+            return_distance=True,
         )
         assert len(indices[0]) == 8
 
@@ -168,7 +171,8 @@ class TestBert:
         model_name = "cointegrated/rubert-tiny2"
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         model = AutoModelForSequenceClassification.from_pretrained(
-            model_name, num_labels=2
+            model_name,
+            num_labels=2,
         )
         model.to(device)
 
@@ -209,8 +213,9 @@ class TestBert:
 class TestVectorDb:
     def test_fit(self, test_dataset):
         import json
-        import torch
+
         import chromadb
+        import torch
         from sentence_transformers import SentenceTransformer
 
         texts, labels = test_dataset

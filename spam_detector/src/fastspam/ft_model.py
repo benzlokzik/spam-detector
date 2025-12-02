@@ -42,7 +42,9 @@ class FastTextSpamModel(SpamModel):
         logger.info("Training FastText model...")
         train_path = get_fasttext_file()
         model = fasttext.train_supervised(
-            input=str(train_path), verbose=2, **self.params
+            input=str(train_path),
+            verbose=2,
+            **self.params,
         )
         if self.quantize:
             logger.debug("Quantizing model...")
@@ -63,11 +65,12 @@ class FastTextSpamModel(SpamModel):
         if self._m is None:
             self.load()
         if self._m is None:
-            raise RuntimeError("Model is not loaded")
+            msg = "Model is not loaded"
+            raise RuntimeError(msg)
         processed = text.lower().replace("\n", "\t").strip()
         labels, probs = self._m.predict(processed, k=2)
         return max(
-            (p for l, p in zip(labels, probs, strict=False) if l == "__label__spam"),
+            (p for l, p in zip(labels, probs, strict=False) if l == "__label__spam"),  # noqa: E741
             default=0.0,
         )
 
@@ -77,9 +80,9 @@ if __name__ == "__main__":
     model = FastTextSpamModel(cfg)
     model.fit()
     logger.info(
-        f"Spam test: {model.predict_proba('Срочно работа в Москве! З/п 150 000 руб! Писать на в лс')}"
+        f"Spam test: {model.predict_proba('Срочно работа в Москве! З/п 150 000 руб! Писать на в лс')}",  # noqa: E501
     )
     logger.info(
-        f"Ham test: {model.predict_proba('блять как же заебали кустовые эйдоры сука ненавижу их всех')}"
+        f"Ham test: {model.predict_proba('блять как же заебали кустовые эйдоры сука ненавижу их всех')}",  # noqa: E501
     )
     logger.info(f"Short test: {model.predict_proba('qq')}")

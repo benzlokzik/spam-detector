@@ -29,7 +29,8 @@ class RagSpamModel(SpamModel):
         logger.info("Training RAG model...")
         texts, labels = load_dataset()
         if not texts:
-            raise ValueError("Dataset is empty")
+            msg = "Dataset is empty"
+            raise ValueError(msg)
         logger.debug("Fitting TF-IDF vectorizer...")
         vec = TfidfVectorizer(
             analyzer=self.analyzer,
@@ -63,7 +64,8 @@ class RagSpamModel(SpamModel):
         if self._vec is None or self._nn is None or self._labels is None:
             self.load()
         if self._vec is None or self._nn is None or self._labels is None:
-            raise RuntimeError("Model is not loaded")
+            msg = "Model is not loaded"
+            raise RuntimeError(msg)
         vector = self._vec.transform([text.lower().replace("\n", " ").strip()])
         distances, indices = self._nn.kneighbors(vector, return_distance=True)
         spam_score = 0.0

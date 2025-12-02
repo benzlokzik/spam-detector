@@ -134,7 +134,8 @@ class BertSpamModel(SpamModel):
         if self._tokenizer is None or self._model is None:
             self.load()
         if self._tokenizer is None or self._model is None:
-            raise RuntimeError("Model is not loaded")
+            msg = "Model is not loaded"
+            raise RuntimeError(msg)
         device = self._device()
         self._model.eval()
         with torch.no_grad():

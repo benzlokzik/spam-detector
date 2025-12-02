@@ -9,7 +9,7 @@ _loaded = False
 
 def load_config() -> None:
     """Load environment variables from .env file if it exists."""
-    global _loaded
+    global _loaded  # noqa: PLW0603
     if not _loaded:
         env_file = Path(".env")
         if env_file.exists():
@@ -83,7 +83,7 @@ def get_admin_user_ids() -> list[int]:
     separators_normalized = raw.replace(" ", ",")
     ids: list[int] = []
     for token in separators_normalized.split(","):
-        token = token.strip()
+        token = token.strip()  # noqa: PLW2901
         if not token:
             continue
         try:
