@@ -32,9 +32,13 @@ jobs:
           uv sync --all-groups
 
       - name: Run linter
+        id: linter
+        continue-on-error: true
         run: uv run ruff check .
 
       - name: Run tests
+        id: tests
+        continue-on-error: true
         run: |
           mkdir -p logs
           uv run pytest --html=logs/report.html --self-contained-html --junitxml=logs/junit.xml
@@ -54,3 +58,12 @@ jobs:
           name: test_data
           path: tests/test_data/
           retention-days: 14
+
+      - name: Check results
+        if: steps.linter.outcome == 'failure' || steps.tests.outcome == 'failure'
+        run: |
+          echo "::group::Failed steps"
+          [[ "${{ steps.linter.outcome }}" == "failure" ]] && echo "::error::Linter failed"
+          [[ "${{ steps.tests.outcome }}" == "failure" ]] && echo "::error::Tests failed - check uploaded artifacts"
+          echo "::endgroup::"
+          exit 1
