@@ -61,7 +61,12 @@ ignore = [
     "UP007",
     "N802",
     "T201",
-    "FBT002"
+    "FBT002",
+    "N806",
+    # "PD901", i dunno what's going wrong on these
+    "N803",
+    "PLR0913",
+    "TID252", # TODO: fix this
 ]
 
 
