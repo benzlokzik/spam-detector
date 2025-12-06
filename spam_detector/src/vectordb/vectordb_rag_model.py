@@ -82,11 +82,19 @@ class VectorDbRagSpamModel(SpamModel):
         logger.info(f"Generating embeddings for {len(spam_texts)} spam examples...")
         embeddings = encoder.encode(spam_texts, show_progress_bar=True, batch_size=32)
         logger.info("Storing embeddings in ChromaDB...")
-        collection.add(
-            embeddings=embeddings.tolist(),
-            documents=spam_texts,
-            ids=[f"spam_{i}" for i in range(len(spam_texts))],
-        )
+        batch_size = 5000  # ChromaDB max batch size is 5461
+        total = len(spam_texts)
+        for start_idx in range(0, total, batch_size):
+            end_idx = min(start_idx + batch_size, total)
+            collection.add(
+                embeddings=embeddings[start_idx:end_idx].tolist(),
+                documents=spam_texts[start_idx:end_idx],
+                ids=[f"spam_{i}" for i in range(start_idx, end_idx)],
+            )
+            logger.debug(
+                f"Added batch {start_idx // batch_size + 1}/"
+                f"{(total + batch_size - 1) // batch_size} ({start_idx} - {end_idx})",
+            )
         self._collection = collection
         config_path = self.cfg.model_path.with_suffix(".json")
         config_data = {
