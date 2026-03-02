@@ -18,7 +18,7 @@
 			"shellautocompletion": true,
 			"version": "latest"
 		},
-		"ghcr.io/devcontainers/features/nvidia-cuda:2": {
+		"ghcr.io/devcontainers/features/nvidia-cuda:3": {
 			"installToolkit": false, // turn on when try to use CuPy or similar
 			"cudaVersion": "12.5",
 			"cudnnVersion": "automatic"
