@@ -57,6 +57,20 @@ model = SklearnSpamModel(ModelConfig(model_name=path))
 model.load()
 ```
 
+BERT loads directly from a Hugging Face repo id (or a local directory) — pass it as `pretrained`; `transformers` downloads and caches it:
+
+```python
+from spam_detector.core.base_model import ModelConfig
+from spam_detector.transformers.bert_model import BertSpamModel, BertTrainingConfig
+
+model = BertSpamModel(
+    ModelConfig(),
+    BertTrainingConfig(pretrained="benzlokzik/spam-detector-bert"),
+)
+model.load()
+print(model.predict_proba("..."))  # float in [0, 1]
+```
+
 Env-driven alternative: `get_spam_model()` selects the backend from the `MODEL_BACKEND` environment variable. (Importing the package no longer instantiates a model.)
 
 ### Model weights
@@ -65,6 +79,7 @@ Weights ship via Hugging Face and are passed through `ModelConfig(model_name=<lo
 
 - **fastText** — repo `benzlokzik/spam-detector-fasttext`, file `antispam.bin` (4.43 MB).
 - **sklearn** — repo `benzlokzik/spam-detector-sklearn`, a `.joblib` file (pending upload; until then the local `spam_detector/data/sklearn_spam.bin` works).
+- **BERT** — repo `benzlokzik/spam-detector-bert` (rubert-tiny2), loaded via `BertTrainingConfig(pretrained=...)`.
 
 See `experiments/` for training and evaluation scripts.
 
