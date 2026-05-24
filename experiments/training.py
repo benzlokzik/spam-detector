@@ -14,7 +14,7 @@ def _():
 
 @app.cell
 def _():
-    from spam_detector.src.fastspam.ft_model import FastTextSpamModel, ModelConfig
+    from spam_detector.fastspam.ft_model import FastTextSpamModel, ModelConfig
 
     return FastTextSpamModel, ModelConfig
 

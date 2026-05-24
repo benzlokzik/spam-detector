@@ -336,3 +336,14 @@ __marimo__/
 
 *.parquet
 spam_detector/data/train.txt
+
+# Trained model artifacts (distributed via Hugging Face)
+/antispam.bin
+spam_detector/data/*.bin
+spam_detector/data/chroma_db/
+spam_detector/data/vectordb_spam.json
+spam_detector/spam-detector-bert-onnx/
+
+# Generated datasets / outputs
+generated_spam_dataset*.csv
+res.csv
