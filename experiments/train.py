@@ -6,13 +6,13 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from loguru import logger
 
-from spam_detector.src import log_config  # noqa: F401
-from spam_detector.src.core.base_model import ModelConfig
-from spam_detector.src.fastspam.ft_model import FastTextSpamModel
-from spam_detector.src.linear.sk_model import SklearnSpamModel
-from spam_detector.src.rag.rag_model import RagSpamModel
-from spam_detector.src.transformers.bert_model import BertSpamModel
-from spam_detector.src.vectordb.vectordb_rag_model import VectorDbRagSpamModel
+from spam_detector import log_config  # noqa: F401
+from spam_detector.core.base_model import ModelConfig
+from spam_detector.fastspam.ft_model import FastTextSpamModel
+from spam_detector.linear.sk_model import SklearnSpamModel
+from spam_detector.rag.rag_model import RagSpamModel
+from spam_detector.transformers.bert_model import BertSpamModel
+from spam_detector.vectordb.vectordb_rag_model import VectorDbRagSpamModel
 
 
 def train_fasttext() -> None:

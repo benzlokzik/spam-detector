@@ -6,8 +6,8 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
 
-from spam_detector.src.core.base_model import ModelConfig
-from spam_detector.src.vectordb.vectordb_rag_model import VectorDbRagSpamModel
+from spam_detector.core.base_model import ModelConfig
+from spam_detector.vectordb.vectordb_rag_model import VectorDbRagSpamModel
 
 
 @pytest.fixture
@@ -94,14 +94,14 @@ class TestVectorDbRagSpamModelInit:
 class TestVectorDbRagSpamModelDevice:
     """Test device detection methods."""
 
-    @patch("spam_detector.src.vectordb.vectordb_rag_model.torch")
+    @patch("spam_detector.vectordb.vectordb_rag_model.torch")
     def test_device_cuda(self, mock_torch, model_config):
         """Test device detection when CUDA is available."""
         mock_torch.cuda.is_available.return_value = True
         model = VectorDbRagSpamModel(model_config)
         assert model._device() == "cuda"
 
-    @patch("spam_detector.src.vectordb.vectordb_rag_model.torch")
+    @patch("spam_detector.vectordb.vectordb_rag_model.torch")
     def test_device_mps(self, mock_torch, model_config):
         """Test device detection when MPS is available."""
         mock_torch.cuda.is_available.return_value = False
@@ -109,7 +109,7 @@ class TestVectorDbRagSpamModelDevice:
         model = VectorDbRagSpamModel(model_config)
         assert model._device() == "mps"
 
-    @patch("spam_detector.src.vectordb.vectordb_rag_model.torch")
+    @patch("spam_detector.vectordb.vectordb_rag_model.torch")
     def test_device_cpu(self, mock_torch, model_config):
         """Test device detection when only CPU is available."""
         mock_torch.cuda.is_available.return_value = False
@@ -121,9 +121,9 @@ class TestVectorDbRagSpamModelDevice:
 class TestVectorDbRagSpamModelFit:
     """Test fit() method."""
 
-    @patch("spam_detector.src.vectordb.vectordb_rag_model.load_dataset")
-    @patch("spam_detector.src.vectordb.vectordb_rag_model.chromadb")
-    @patch("spam_detector.src.vectordb.vectordb_rag_model.SentenceTransformer")
+    @patch("spam_detector.vectordb.vectordb_rag_model.load_dataset")
+    @patch("spam_detector.vectordb.vectordb_rag_model.chromadb")
+    @patch("spam_detector.vectordb.vectordb_rag_model.SentenceTransformer")
     def test_fit_success(
         self,
         mock_sentence_transformer,
@@ -173,7 +173,7 @@ class TestVectorDbRagSpamModelFit:
         assert config_data["similarity_threshold"] == 0.7
         assert config_data["top_k"] == 10
 
-    @patch("spam_detector.src.vectordb.vectordb_rag_model.load_dataset")
+    @patch("spam_detector.vectordb.vectordb_rag_model.load_dataset")
     def test_fit_no_spam_examples(self, mock_load_dataset, model_config):
         """Test fit raises ValueError when no spam examples found."""
         mock_load_dataset.return_value = (
@@ -185,9 +185,9 @@ class TestVectorDbRagSpamModelFit:
         with pytest.raises(ValueError, match="No spam examples found"):
             model.fit()
 
-    @patch("spam_detector.src.vectordb.vectordb_rag_model.load_dataset")
-    @patch("spam_detector.src.vectordb.vectordb_rag_model.chromadb")
-    @patch("spam_detector.src.vectordb.vectordb_rag_model.SentenceTransformer")
+    @patch("spam_detector.vectordb.vectordb_rag_model.load_dataset")
+    @patch("spam_detector.vectordb.vectordb_rag_model.chromadb")
+    @patch("spam_detector.vectordb.vectordb_rag_model.SentenceTransformer")
     def test_fit_batch_processing(
         self,
         mock_sentence_transformer,
@@ -236,9 +236,9 @@ class TestVectorDbRagSpamModelFit:
         assert len(second_call[1]["ids"]) == 1000
         assert len(second_call[1]["embeddings"]) == 1000
 
-    @patch("spam_detector.src.vectordb.vectordb_rag_model.load_dataset")
-    @patch("spam_detector.src.vectordb.vectordb_rag_model.chromadb")
-    @patch("spam_detector.src.vectordb.vectordb_rag_model.SentenceTransformer")
+    @patch("spam_detector.vectordb.vectordb_rag_model.load_dataset")
+    @patch("spam_detector.vectordb.vectordb_rag_model.chromadb")
+    @patch("spam_detector.vectordb.vectordb_rag_model.SentenceTransformer")
     def test_fit_existing_collection_deleted(
         self,
         mock_sentence_transformer,
@@ -285,10 +285,10 @@ class TestVectorDbRagSpamModelLoad:
 
         with (
             patch(
-                "spam_detector.src.vectordb.vectordb_rag_model.chromadb"
+                "spam_detector.vectordb.vectordb_rag_model.chromadb"
             ) as mock_chromadb,
             patch(
-                "spam_detector.src.vectordb.vectordb_rag_model.SentenceTransformer"
+                "spam_detector.vectordb.vectordb_rag_model.SentenceTransformer"
             ) as mock_sentence_transformer,
         ):
             mock_chromadb.PersistentClient.return_value = mock_client
@@ -329,10 +329,10 @@ class TestVectorDbRagSpamModelLoad:
 
         with (
             patch(
-                "spam_detector.src.vectordb.vectordb_rag_model.chromadb"
+                "spam_detector.vectordb.vectordb_rag_model.chromadb"
             ) as mock_chromadb,
             patch(
-                "spam_detector.src.vectordb.vectordb_rag_model.SentenceTransformer"
+                "spam_detector.vectordb.vectordb_rag_model.SentenceTransformer"
             ) as mock_sentence_transformer,
         ):
             mock_chromadb.PersistentClient.return_value = mock_client
@@ -492,10 +492,10 @@ class TestVectorDbRagSpamModelPredictProba:
 
         with (
             patch(
-                "spam_detector.src.vectordb.vectordb_rag_model.chromadb"
+                "spam_detector.vectordb.vectordb_rag_model.chromadb"
             ) as mock_chromadb,
             patch(
-                "spam_detector.src.vectordb.vectordb_rag_model.SentenceTransformer"
+                "spam_detector.vectordb.vectordb_rag_model.SentenceTransformer"
             ) as mock_sentence_transformer,
         ):
             mock_chromadb.PersistentClient.return_value = MagicMock()
@@ -532,7 +532,7 @@ class TestVectorDbRagSpamModelPredictProba:
 class TestVectorDbRagSpamModelHelpers:
     """Test helper methods."""
 
-    @patch("spam_detector.src.vectordb.vectordb_rag_model.chromadb")
+    @patch("spam_detector.vectordb.vectordb_rag_model.chromadb")
     def test_get_client(self, mock_chromadb, model_config, temp_dir):
         """Test _get_client creates and caches client."""
         mock_client = MagicMock()
@@ -547,7 +547,7 @@ class TestVectorDbRagSpamModelHelpers:
         assert client1 is mock_client
         mock_chromadb.PersistentClient.assert_called_once()
 
-    @patch("spam_detector.src.vectordb.vectordb_rag_model.chromadb")
+    @patch("spam_detector.vectordb.vectordb_rag_model.chromadb")
     def test_get_collection_existing(self, mock_chromadb, model_config):
         """Test _get_collection retrieves existing collection."""
         mock_client = MagicMock()
@@ -562,7 +562,7 @@ class TestVectorDbRagSpamModelHelpers:
         mock_client.get_collection.assert_called_once_with(name="spam_examples")
         mock_client.create_collection.assert_not_called()
 
-    @patch("spam_detector.src.vectordb.vectordb_rag_model.chromadb")
+    @patch("spam_detector.vectordb.vectordb_rag_model.chromadb")
     def test_get_collection_new(self, mock_chromadb, model_config):
         """Test _get_collection creates new collection if not exists."""
         mock_client = MagicMock()
@@ -577,7 +577,7 @@ class TestVectorDbRagSpamModelHelpers:
         assert collection is mock_collection
         mock_client.create_collection.assert_called_once_with(name="spam_examples")
 
-    @patch("spam_detector.src.vectordb.vectordb_rag_model.SentenceTransformer")
+    @patch("spam_detector.vectordb.vectordb_rag_model.SentenceTransformer")
     def test_get_encoder(self, mock_sentence_transformer, model_config):
         """Test _get_encoder creates and caches encoder."""
         mock_encoder = MagicMock()
