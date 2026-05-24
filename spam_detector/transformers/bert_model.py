@@ -23,6 +23,7 @@ class BertTrainingConfig:
     epochs: int = 1
     lr: float = 2e-5
     warmup_ratio: float = 0.1
+    pretrained: str | None = None
 
 
 class _TextDataset(Dataset):
@@ -50,6 +51,8 @@ class BertSpamModel(SpamModel):
 
     @property
     def _model_dir(self) -> str:
+        if self.train_cfg.pretrained:
+            return self.train_cfg.pretrained
         path = self.cfg.model_path
         if path.suffix:
             return str(path.with_suffix(""))
