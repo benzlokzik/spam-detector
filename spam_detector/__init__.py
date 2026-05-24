@@ -1,11 +1,13 @@
-# Factory: create a spam_model instance chosen by env
 import importlib
 
 from .config import get_model_backend, get_model_filename
 from .core.base_model import ModelConfig, SpamModel  # re-export
 
+__all__ = ["ModelConfig", "SpamModel", "get_spam_model"]
 
-def _create_spam_model() -> SpamModel:
+
+def get_spam_model() -> SpamModel:
+    """Instantiate the backend selected by env (``MODEL_BACKEND``)."""
     backend = get_model_backend()
     model_filename = get_model_filename()
     cfg = ModelConfig(model_name=model_filename)
@@ -25,16 +27,11 @@ def _create_spam_model() -> SpamModel:
         ).RagSpamModel
         return RagSpamModel(cfg)
     if backend == "vectordb":
-        VectorDbRagSpamModel = (
-            importlib.import_module(
-                "spam_detector.vectordb.vectordb_rag_model",
-            )
+        VectorDbRagSpamModel = importlib.import_module(
+            "spam_detector.vectordb.vectordb_rag_model",
         ).VectorDbRagSpamModel
         return VectorDbRagSpamModel(cfg)
     FastTextSpamModel = importlib.import_module(
         "spam_detector.fastspam.ft_model",
     ).FastTextSpamModel
     return FastTextSpamModel(cfg)
-
-
-spam_model: SpamModel = _create_spam_model()
