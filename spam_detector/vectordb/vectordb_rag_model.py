@@ -104,6 +104,7 @@ class VectorDbRagSpamModel(SpamModel):
             "similarity_threshold": self.similarity_threshold,
             "top_k": self.top_k,
         }
+        config_path.parent.mkdir(parents=True, exist_ok=True)
         config_path.write_text(json.dumps(config_data, indent=2), encoding="utf-8")
         logger.info(f"Model saved to {config_path}")
 
